@@ -9,9 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@web3modal/ethers": "^4.2.3",
+    "axios": "^1.7.2",
+    "ethers": "^6.13.0",
+    "framer-motion": "^11.2.10",
+    "ipfs-http-client": "^60.0.1",
+    "next": "14.2.3",
+    "next-themes": "^0.3.0",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.3"
+    "react-icons": "^5.2.1"
   },
   "devDependencies": {
     "postcss": "^8",
