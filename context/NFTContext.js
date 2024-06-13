@@ -10,6 +10,7 @@ import {
   BrowserProvider,
   EtherscanProvider,
   Contract,
+  formatUnits,
   parseUnits
 } from 'ethers';
 import axios from 'axios';
@@ -66,27 +67,8 @@ createWeb3Modal({
   }
 });
 
-const subdomainName = 'daijuplace';
-
-const ipfsProjectId = process.env.NEXT_PUBLIC_IPFS_PROJECT_ID;
-const projectSecret = process.env.NEXT_PUBLIC_API_KEY_SECRET;
-const auth = `Basic ${Buffer.from(`${ipfsProjectId}:${projectSecret}`).toString(
-  'base64',
-)}`;
-
-const endpointBasePath = `https://${subdomainName}.infura-ipfs.io/ipfs/`;
-
-const apiKey = process.env.NEXT_PUBLICE_PINATA_API_KEY;
-const secretKey = process.env.NEXT_PUBLIC_PINATA_API_SECRET;
-
-const client = ipfsHttpClient({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https',
-  headers: {
-    authorization: auth,
-  },
-});
+const apiKey = process.env.NEXT_PUBLIC_PINATA_API_KEY;
+const apiSecret = process.env.NEXT_PUBLIC_PINATA_API_SECRET;
 
 const fetchContract = (signerOrProvider) => new Contract(MarketAddress, MarketAddressABI, signerOrProvider);
 
@@ -122,8 +104,8 @@ export const NFTProvider = ({ children }) => {
         url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
         data: formData,
         headers: {
-          'pinata_api_key': `${process.env.NEXT_PUBLIC_PINATA_API_KEY}`,
-          'pinata_secret_api_key': `${process.env.NEXT_PUBLIC_PINATA_API_SECRET}`,
+          'pinata_api_key': apiKey,
+          'pinata_secret_api_key': apiSecret,
           "Content-Type": "multipart/form-data"
         },
       });
@@ -139,8 +121,8 @@ export const NFTProvider = ({ children }) => {
   };
 
   const createSale = async (url, formInputPrice, isReselling, id) => {
-    const ethersProvider = new BrowserProvider(walletProvider);
-    const signer = ethersProvider.getSigner();
+    const provider = new BrowserProvider(walletProvider);
+    const signer = await provider.getSigner();
 
     const price = parseUnits(formInputPrice, 'ether');
     const contract = fetchContract(signer);
@@ -166,24 +148,35 @@ export const NFTProvider = ({ children }) => {
     const data = JSON.stringify({ name, description, image: fileUrl });
 
     try {
-      const added = await client.add(data);
-      const url = endpointBasePath + added.path;
+      const response = await axios({
+        method: "post",
+        url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        data: data,
+        headers: {
+          'pinata_api_key': apiKey,
+          'pinata_secret_api_key': apiSecret,
+          "Content-Type": "application/json"
+        },
+      });
 
-      console.log(`Created NFT url: ${url}`);
-
+      const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
       await createSale(url, price);
 
       router.push('/');
     } catch (error) {
-      console.log('error uploading file');
+      console.log("Error sending form data to IPFS: ");
+      console.log(error);
     }
   };
 
   const fetchNFTs = async () => {
     setIsLoadingNFT(false);
-    const provider = new EtherscanProvider('sepolia');
-    const contract = fetchContract(provider);
+    const provider = new BrowserProvider(walletProvider);
+    const signer = await provider.getSigner();
+    const contract = fetchContract(signer);
     const data = await contract.fetchMarketItems();
+
+    console.log(data);
 
     const items = await Promise.all(
       data.map(async ({ tokenId, seller, owner, price: unformattedPrice }) => {
@@ -191,7 +184,7 @@ export const NFTProvider = ({ children }) => {
         console.log('data', tokenURI);
         try {
           const { data: { image, name, description } } = await axios.get(tokenURI);
-          const price = ethers.utils.formatUnits(unformattedPrice.toString(), 'ether');
+          const price = formatUnits(unformattedPrice.toString(), 'ether');
 
           // return an object with relevant properties
           return {
@@ -236,7 +229,7 @@ export const NFTProvider = ({ children }) => {
         const {
           data: { image, name, description },
         } = await axios.get(tokenURI);
-        const price = ethers.utils.formatUnits(
+        const price = formatUnits(
           unformattedPrice.toString(),
           'ether',
         );
@@ -257,15 +250,10 @@ export const NFTProvider = ({ children }) => {
   };
 
   const buyNft = async (nft) => {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(
-      MarketAddress,
-      MarketAddressABI,
-      signer,
-    );
+    const provider = new BrowserProvider(walletProvider);
+    const signer = await provider.getSigner();
+
+    const contract = fetchContract(signer);
 
     const price = ethers.utils.parseUnits(nft.price.toString(), 'ether');
     const transaction = await contract.createMarketSale(nft.tokenId, {
