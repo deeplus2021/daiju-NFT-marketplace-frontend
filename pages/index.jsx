@@ -11,7 +11,7 @@ import { getCreators } from '../utils/index';
 import { shortenAddress } from '../utils/index';
 
 export default function Home() {
-  const { fetchNFTs } = useContext(NFTContext);
+  const { fetchNFTs, currentAccount } = useContext(NFTContext);
   const [hideButtons, setHideButtons] = useState(false);
   const [nfts, setNfts] = useState([]);
   const [nftsCopy, setNftsCopy] = useState([]);
@@ -24,15 +24,21 @@ export default function Home() {
   const parentRef = useRef(null);
   const scrollRef = useRef(null);
 
-  // useEffect(() => {
-  //   fetchNFTs()
-  //     .then((items) => {
-  //       const finalitems = items.filter((v) => v !== null);
-  //       setNfts(finalitems);
-  //       setNftsCopy(finalitems);
-  //       setIsLoading(false);
-  //     });
-  // }, []);
+  useEffect(() => {
+    if (currentAccount) {
+      fetchNFTs()
+      .then((items) => {
+        const finalitems = items.filter((v) => v !== null);
+        setNfts(finalitems);
+        setNftsCopy(finalitems);
+        setIsLoading(false);
+      });
+    } else {
+        setNfts([]);
+        setNftsCopy([]);
+        setIsLoading(false);
+    }
+  }, [currentAccount]);
 
   useEffect(() => {
     const sortedNfts = [...nfts];
@@ -130,7 +136,9 @@ export default function Home() {
         />
 
         {!isLoading && !nfts.length ? (
-          <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold ml-4 xs:ml-0">The marketplace is empty.</h1>
+          <h1 className="font-poppins text-center py-6 dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold ml-4 xs:ml-0">
+            {currentAccount ? "The marketplace is empty." : "Connect your wallet please." }
+          </h1>
         ) : isLoading ? <Loader /> : (
           <>
             <div>
@@ -206,6 +214,7 @@ export default function Home() {
       </div>
       {
         showScrollButton && (
+
           <button
             type="button"
             className='fixed bottom-12 right-8 z-50 w-12 h-12 cursor-pointer p-2 nft-gradient shadow-lg
@@ -219,6 +228,7 @@ export default function Home() {
               alt="top_arrow"
               className={theme === 'light' ? 'filter invert' : ''}
             />
+
           </button>
         )
       }

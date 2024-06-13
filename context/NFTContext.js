@@ -2,19 +2,17 @@ import React, { useEffect, useState } from 'react';
 import {
   createWeb3Modal,
   defaultConfig,
+  useWeb3Modal,
   useWeb3ModalProvider,
   useWeb3ModalAccount
 } from '@web3modal/ethers/react';
 import {
-  ethers,
   BrowserProvider,
-  EtherscanProvider,
   Contract,
   formatUnits,
   parseUnits
 } from 'ethers';
 import axios from 'axios';
-import { create as ipfsHttpClient } from 'ipfs-http-client';
 
 import { MarketAddress, MarketAddressABI } from './constants';
 
@@ -90,6 +88,13 @@ export const NFTProvider = ({ children }) => {
     }
   };
 
+  const connectWallet = async() => {
+    if (!isConnected) {
+      const { open } = useWeb3Modal();
+      open({view: 'Connect'});
+    }
+  }
+
   useEffect(() => {
     checkIfWalletIsConnect();
   }, [address, isConnected]);
@@ -110,10 +115,9 @@ export const NFTProvider = ({ children }) => {
         },
       });
 
-      const ImgHash = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
-      console.log(ImgHash);
-      return ImgHash;
-      //Take a look at your Pinata Pinned section, you will see a new file added to you list.   
+      const url = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
+
+      return url;
     } catch (error) {
       console.log("Error sending File to IPFS: ")
       console.log(error)
@@ -176,12 +180,11 @@ export const NFTProvider = ({ children }) => {
     const contract = fetchContract(signer);
     const data = await contract.fetchMarketItems();
 
-    console.log(data);
+    console.log("============");
 
     const items = await Promise.all(
       data.map(async ({ tokenId, seller, owner, price: unformattedPrice }) => {
         const tokenURI = await contract.tokenURI(tokenId);
-        console.log('data', tokenURI);
         try {
           const { data: { image, name, description } } = await axios.get(tokenURI);
           const price = formatUnits(unformattedPrice.toString(), 'ether');
@@ -189,7 +192,7 @@ export const NFTProvider = ({ children }) => {
           // return an object with relevant properties
           return {
             price,
-            tokenId: tokenId.toNumber(),
+            tokenId: Number(tokenId),
             seller,
             owner,
             image,
@@ -236,7 +239,7 @@ export const NFTProvider = ({ children }) => {
 
         return {
           price,
-          tokenId: tokenId.toNumber(),
+          tokenId: Number(tokenId),
           seller,
           owner,
           image,
@@ -255,7 +258,7 @@ export const NFTProvider = ({ children }) => {
 
     const contract = fetchContract(signer);
 
-    const price = ethers.utils.parseUnits(nft.price.toString(), 'ether');
+    const price = parseUnits(nft.price.toString(), 'ether');
     const transaction = await contract.createMarketSale(nft.tokenId, {
       value: price,
     });
@@ -270,6 +273,7 @@ export const NFTProvider = ({ children }) => {
       value={{
         nftCurrency,
         currentAccount,
+        connectWallet,
         uploadToIPFS,
         createNFT,
         fetchNFTs,
