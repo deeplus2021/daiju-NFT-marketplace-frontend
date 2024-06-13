@@ -37,9 +37,6 @@ const Footer = () => {
               <li className="mb-3">
                 <a href="https://sepolia.etherscan.io/address/0x1e947ee2d808d5aE673b7AD8ED2BDf42Bd16175a" target="_blank" className="font-poppins dark:text-white text-nft-black-1 font-normal text-base cursor-pointer dark:hover:text-nft-gray-1 hover:text-nft-black-1 my-3 transition duration-300" rel="noreferrer">Smart Contract</a>
               </li>
-              <li className="mb-3">
-                <a href="https://github.com/biginfo2012/daiju-nft-marketplace-frontend" target="_blank" className="font-poppins dark:text-white text-nft-black-1 font-normal text-base cursor-pointer dark:hover:text-nft-gray-1 hover:text-nft-black-1 my-3 transition duration-300" rel="noreferrer">The Project</a>
-              </li>
             </ul>
           </div>
           <div>
