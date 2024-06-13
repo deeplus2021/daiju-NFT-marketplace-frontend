@@ -49,7 +49,7 @@ const ethersConfig = defaultConfig({
     icons: ['https://avatars.githubusercontent.com/u/37784886']
   },
   enableEmail: true,
-  defaultChainId: 1,
+  defaultChainId: 11155111,
   rpcUrl: 'https://cloudflare-eth.com'
 });
 
@@ -76,6 +76,9 @@ const auth = `Basic ${Buffer.from(`${ipfsProjectId}:${projectSecret}`).toString(
 
 const endpointBasePath = `https://${subdomainName}.infura-ipfs.io/ipfs/`;
 
+const apiKey = process.env.NEXT_PUBLICE_PINATA_API_KEY;
+const secretKey = process.env.NEXT_PUBLIC_PINATA_API_SECRET;
+
 const client = ipfsHttpClient({
   host: 'ipfs.infura.io',
   port: 5001,
@@ -91,20 +94,47 @@ export const NFTContext = React.createContext();
 
 export const NFTProvider = ({ children }) => {
   const nftCurrency = 'ETH';
+  const [currentAccount, setCurrentAccount] = useState('');
   const { address, chainId, isConnected } = useWeb3ModalAccount();
   const { walletProvider } = useWeb3ModalProvider();
   const [isLoadingNFT, setIsLoadingNFT] = useState(false);
 
+  const checkIfWalletIsConnect = async () => {
+    if (!isConnected) {
+      setCurrentAccount('');
+      return 'Please install MetaMask.';
+    } else {
+      setCurrentAccount(address);
+    }
+  };
+
+  useEffect(() => {
+    checkIfWalletIsConnect();
+  }, [address, isConnected]);
+
   const uploadToIPFS = async (file) => {
     try {
-      const added = await client.add({ content: file });
-      const url = `${endpointBasePath}/${added.path}`;
+      const formData = new FormData();
+      formData.append("file", file);
 
-      console.log(`Upload to IPFS url: ${url}`);
+      const resFile = await axios({
+        method: "post",
+        url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        data: formData,
+        headers: {
+          'pinata_api_key': `${process.env.NEXT_PUBLIC_PINATA_API_KEY}`,
+          'pinata_secret_api_key': `${process.env.NEXT_PUBLIC_PINATA_API_SECRET}`,
+          "Content-Type": "multipart/form-data"
+        },
+      });
 
-      return url;
+      const ImgHash = `https://gateway.pinata.cloud/ipfs/${resFile.data.IpfsHash}`;
+      console.log(ImgHash);
+      return ImgHash;
+      //Take a look at your Pinata Pinned section, you will see a new file added to you list.   
     } catch (error) {
-      console.log('error uploading file');
+      console.log("Error sending File to IPFS: ")
+      console.log(error)
     }
   };
 
@@ -192,10 +222,8 @@ export const NFTProvider = ({ children }) => {
 
   const fetchMyNFTsOrListedNFTs = async (type) => {
     setIsLoadingNFT(false);
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
+    const provider = new BrowserProvider(walletProvider);
+    const signer = await provider.getSigner();
 
     const contract = fetchContract(signer);
     const data = type === 'fetchItemsListed'
@@ -253,7 +281,7 @@ export const NFTProvider = ({ children }) => {
     <NFTContext.Provider
       value={{
         nftCurrency,
-        address,
+        currentAccount,
         uploadToIPFS,
         createNFT,
         fetchNFTs,

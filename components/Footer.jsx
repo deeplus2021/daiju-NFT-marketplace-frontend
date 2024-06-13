@@ -14,7 +14,6 @@ const Footer = () => {
         <div className="flexStart flex-1 flex-col">
           <div className="flexCenter">
             <Link href="/">
-
               <Image src={images.logo02} className='cursor-pointer' objectFit="contain" width={40} height={40} alt="logo" />
             </Link>
             <p className=" dark:text-white text-nft-dark font-semibold text-lg ml-1">Daijuplace</p>
@@ -36,10 +35,10 @@ const Footer = () => {
             <h2 className="font-poppins dark:text-white text-nft-black-1 font-semibold text-xl mb-10">Daijuplace</h2>
             <ul className="font-poppins text-nft-black-1 dark:text-white">
               <li className="mb-3">
-                <a href="https://sepolia.etherscan.io/address/0xF5f6B924332C350E3Fcd3A50Fc94db822f0B760f" target="_blank" className="font-poppins dark:text-white text-nft-black-1 font-normal text-base cursor-pointer dark:hover:text-nft-gray-1 hover:text-nft-black-1 my-3 transition duration-300" rel="noreferrer">Smart Contract</a>
+                <a href="https://sepolia.etherscan.io/address/0x1e947ee2d808d5aE673b7AD8ED2BDf42Bd16175a" target="_blank" className="font-poppins dark:text-white text-nft-black-1 font-normal text-base cursor-pointer dark:hover:text-nft-gray-1 hover:text-nft-black-1 my-3 transition duration-300" rel="noreferrer">Smart Contract</a>
               </li>
               <li className="mb-3">
-                <a href="https://github.com/biginfo/daiju-nft-marketplace-frontend" target="_blank" className="font-poppins dark:text-white text-nft-black-1 font-normal text-base cursor-pointer dark:hover:text-nft-gray-1 hover:text-nft-black-1 my-3 transition duration-300" rel="noreferrer">The Project</a>
+                <a href="https://github.com/biginfo2012/daiju-nft-marketplace-frontend" target="_blank" className="font-poppins dark:text-white text-nft-black-1 font-normal text-base cursor-pointer dark:hover:text-nft-gray-1 hover:text-nft-black-1 my-3 transition duration-300" rel="noreferrer">The Project</a>
               </li>
             </ul>
           </div>

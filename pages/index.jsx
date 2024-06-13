@@ -206,7 +206,6 @@ export default function Home() {
       </div>
       {
         showScrollButton && (
-
           <button
             type="button"
             className='fixed bottom-12 right-8 z-50 w-12 h-12 cursor-pointer p-2 nft-gradient shadow-lg
@@ -220,7 +219,6 @@ export default function Home() {
               alt="top_arrow"
               className={theme === 'light' ? 'filter invert' : ''}
             />
-
           </button>
         )
       }
