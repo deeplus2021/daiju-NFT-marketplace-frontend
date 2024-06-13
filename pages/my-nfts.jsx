@@ -10,7 +10,7 @@ import images from '../assets';
 import { shortenAddress } from '../utils/index';
 
 const MyNFTs = () => {
-  const { fetchMyNFTsOrListedNFTs, currentAccount } = useContext(NFTContext);
+  const { fetchMyNFTsOrListedNFTs, connectWallet, currentAccount } = useContext(NFTContext);
   const [nfts, setNfts] = useState([]);
   const [nftsCopy, setNftsCopy] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,11 +70,17 @@ const MyNFTs = () => {
     }
   };
 
+  const onEmptyCreatorSelect = () => {
+    if (!currentAccount) {
+      connectWallet();
+    }
+  }
+
   return (
     <div className="w-full flex justify-start items-center flex-col min-h-screen">
       <div className="w-full flexCenter flex-col">
         <Banner
-          name="Your creative NFT's section."
+          name={currentAccount ? "Your creative NFT's section." : "Please connect your wallet."}
           childStyles="text-center mb-4"
           parentStyles="h-80 justify-center"
 
@@ -83,9 +89,10 @@ const MyNFTs = () => {
         <div className="flexCenter flex-col -mt-20 z-0">
           <div className="flexCenter w-40 h-40 sm:w-36 sm:h-36 p-1 dark:bg-nft-black-4 bg-white rounded-full">
             <Image
-              src={images.creator1}
-              className="rounded-full object-cover"
+              src={currentAccount ? images.creator1 : images.emptyCreator}
+              className="rounded-full object-cover cursor-pointer"
               objectFit="cover"
+              onClick={onEmptyCreatorSelect}
             />
           </div>
           <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-2xl mt-6">{shortenAddress(currentAccount)}</p>

@@ -10,6 +10,7 @@ import github from './github.png';
 import telegram from './telegram.png';
 import twitter from './twitter.png';
 import upload from './upload.png';
+import emptyCreator from './empty-creator.png';
 import creator1 from './creator1.png';
 import creator2 from './creator2.png';
 import creator3 from './creator3.png';
@@ -40,6 +41,7 @@ export default {
     telegram,
     twitter,
     upload,
+    emptyCreator,
     creator1,
     creator2,
     creator3,

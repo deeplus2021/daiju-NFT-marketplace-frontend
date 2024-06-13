@@ -5,6 +5,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  box-sizing: border-box;
+}
+
 .nft-gradient {
   background: linear-gradient(101.12deg,
       #7B3FE4 27.35%,
