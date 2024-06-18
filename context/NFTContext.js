@@ -25,13 +25,6 @@ if (!projectId) {
 // 2. Set chains
 const chains = [
   {
-    chainId: 1,
-    name: 'Ethereum',
-    currency: 'ETH',
-    explorerUrl: 'https://etherscan.io',
-    rpcUrl: 'https://cloudflare-eth.com'
-  },
-  {
     chainId: 11155111,
     name: 'Sepolia',
     currency: 'ETH',
@@ -141,7 +134,7 @@ export const NFTProvider = ({ children }) => {
       });
 
     setIsLoadingNFT(true);
-    await transaction.wait();
+    const trx = await transaction.wait();
   };
 
   const createNFT = async (formInput, fileUrl, router) => {
@@ -179,8 +172,6 @@ export const NFTProvider = ({ children }) => {
     const signer = await provider.getSigner();
     const contract = fetchContract(signer);
     const data = await contract.fetchMarketItems();
-
-    console.log("============");
 
     const items = await Promise.all(
       data.map(async ({ tokenId, seller, owner, price: unformattedPrice }) => {
