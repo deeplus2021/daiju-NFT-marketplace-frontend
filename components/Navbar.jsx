@@ -89,6 +89,7 @@ const Navbar = () => {
               setActive('Explore NFTs');
             }}
           >
+            <Image src={images.logo02} className='cursor-pointer' objectFit="contain" width={40} height={40} alt="logo" />
             <p className="dark:text-white text-nft-black-1 font-bold text-xl ml-1">Daijuplace</p>
           </div>
         </Link>
