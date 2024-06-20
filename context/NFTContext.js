@@ -13,6 +13,7 @@ import {
   parseUnits
 } from 'ethers';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 import { MarketAddress, MarketAddressABI } from './constants';
 
@@ -112,12 +113,13 @@ export const NFTProvider = ({ children }) => {
 
       return url;
     } catch (error) {
-      console.log("Error sending File to IPFS: ")
+      toast("Error sending File to IPFS");
+      console.log("Error sending File to IPFS: ");
       console.log(error)
     }
   };
 
-  const createSale = async (url, formInputPrice, isReselling, id) => {
+  const createSale = async (url, formInputPrice, isReselling, id, router) => {
     const provider = new BrowserProvider(walletProvider);
     const signer = await provider.getSigner();
 
@@ -125,26 +127,40 @@ export const NFTProvider = ({ children }) => {
     const contract = fetchContract(signer);
     const listingPrice = await contract.getListingPrice();
 
-    const transaction = !isReselling
-      ? await contract.createToken(url, price, {
-        value: listingPrice.toString(),
-      })
-      : await contract.resellToken(id, price, {
-        value: listingPrice.toString(),
-      });
+    try {
+      setIsLoadingNFT(true);
+      const transaction = !isReselling
+        ? await contract.createToken(url, price, {
+          value: listingPrice.toString(),
+        })
+        : await contract.resellToken(id, price, {
+          value: listingPrice.toString(),
+        });
 
-    setIsLoadingNFT(true);
-    const trx = await transaction.wait();
+      const trx = await transaction.wait();
+      router.push('/');
+    } catch(error) {
+      setIsLoadingNFT(false);
+      let message = "Creating failed: please check your fund of wallet or connection status";
+      if (error.reason) message = error.reason;
+      console.log(error);
+
+      toast(String(message));
+    };
   };
 
   const createNFT = async (formInput, fileUrl, router) => {
     const { name, description, price } = formInput;
 
-    if (!name || !description || !price || !fileUrl) return;
+    if (!name || !description || !price || !fileUrl) {
+      toast("Please input the required fields.");
+      return;
+    }
 
     const data = JSON.stringify({ name, description, image: fileUrl });
 
     try {
+      setIsLoadingNFT(true);
       const response = await axios({
         method: "post",
         url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
@@ -157,11 +173,10 @@ export const NFTProvider = ({ children }) => {
       });
 
       const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
-      await createSale(url, price);
-
-      router.push('/');
+      await createSale(url, price, false, 0, router);
     } catch (error) {
-      console.log("Error sending form data to IPFS: ");
+      setIsLoadingNFT(false);
+      toast("Error sending form data to IPFS");
       console.log(error);
     }
   };
@@ -194,7 +209,8 @@ export const NFTProvider = ({ children }) => {
         } catch (error) {
           if (error.response && error.response.status === 404) {
             // handle 404 error here
-            console.log('Token URI not found.');
+          toast("Token URI not found.");
+          console.log('Token URI not found.');
             return null;
           }
           // handle other errors here
