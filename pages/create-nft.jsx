@@ -41,7 +41,7 @@ const CreateNFT = () => {
 
   if (isLoadingNFT) {
     return (
-      <div className="flexStart min-h-screen">
+      <div className="flexCenter min-h-screen">
         <Loader />
       </div>
     );
